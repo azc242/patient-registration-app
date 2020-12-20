@@ -81,7 +81,6 @@ func createPatient(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&patient) // decode json request body into Patient struct
 	patient.ID = guuid.New().String()            // creates random ID for new patient
 	patient.Time = time.Now().UTC().Format("2006-01-02 03:04:05")
-	// patientsSlice = append(patientsSlice, patient)
 
 	// start db connection
 	// Fetch environment MySQL environment variables from .env file
@@ -152,34 +151,37 @@ func setDB() {
 
 	defer db.Close()
 
+	// Artificallu adds 2 test users to DB, good for testing GET on /api/patients endpoint
+	var patient Patient
+	patient.Name = "John Doe"
+	patient.DOB = "12/1/1998"
+	patient.Phone = "1234567890"
+	patient.Email = "test123@fakemail.net"
+	patient.ID = guuid.New().String() // creates random ID for new patient
+	patient.Time = time.Now().UTC().Format("2006-01-02 03:04:05")
+	query := fmt.Sprintf("INSERT INTO patients VALUES ('%s','%s','%s','%s','%s','%s')", patient.ID, patient.Name, patient.DOB, patient.Phone, patient.Email, patient.Time)
+	insert, err := db.Query(query)
+
+	patient.Name = "Bailey Thomas"
+	patient.DOB = "3/9/1972"
+	patient.Phone = "690-408-4188"
+	patient.Email = "bt1972@gmail.com"
+	patient.ID = guuid.New().String() // creates random ID for new patient
+	patient.Time = time.Now().UTC().Format("2006-01-02 03:04:05")
+	query = fmt.Sprintf("INSERT INTO patients VALUES ('%s','%s','%s','%s','%s','%s')", patient.ID, patient.Name, patient.DOB, patient.Phone, patient.Email, patient.Time)
+	insert, err = db.Query(query)
+	defer insert.Close()
+
 	// Artificially set up the user admin
-	// this user is the only use who can log in and see patients information
-	insert, err := db.Query("INSERT INTO users VALUES ('0', '0Admin')")
+	// This user is the only use who can log in and see patients information
+	insert, err = db.Query("INSERT INTO users VALUES ('0', '0Admin')")
 
 	if err != nil {
 		panic(err.Error())
 	}
-
 	defer insert.Close()
 
-	// users, err := db.Query("SELECT* FROM patientappdb.users")
-
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-
-	// for users.Next() {
-	// 	var user User
-
-	// 	err := users.Scan(&user.Username, &user.Password)
-	// 	if err != nil {
-	// 		panic(err.Error())
-	// 	}
-
-	// 	fmt.Print(user)
-	// }
-
-	fmt.Print("\nSuccessfully inserted into user tables\n")
+	fmt.Print("Successfully inserted into user tables\n")
 }
 
 func main() {
@@ -190,7 +192,7 @@ func main() {
 	r.HandleFunc("/api/login", validateAdmin).Methods("POST")
 
 	// sets the db up with default admin
-	setDB()
+	// setDB()
 
 	// set up server on port 8000
 	log.Fatal(http.ListenAndServe(":8080", r))
