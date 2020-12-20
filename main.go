@@ -2,12 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	guuid "github.com/google/uuid"
 	"github.com/gorilla/mux"
+
+	"database/sql"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // "time"
@@ -74,6 +79,29 @@ func main() {
 	r.HandleFunc("/api/patients", createPatient).Methods("POST")
 	r.HandleFunc("/api/login", validateAdmin).Methods("POST")
 
+	// start MySQL connection
+	db, err := sql.Open("mysql", "root:Clutch4405!@tcp(127.0.0.1:3306)/patientappdb")
+	// if there is an error opening the connection, handle it
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
+	// Artificially set up the user admin
+	// this user is the only use who can log in and see patients information
+	insert, err := db.Query("INSERT INTO users VALUES ('0', '0Admin')")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+
+	fmt.Print("Successfully inserted into user tables")
+
 	// set up server on port 8000
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
+
+// mysql 0Admin
