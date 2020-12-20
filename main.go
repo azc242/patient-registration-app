@@ -35,15 +35,43 @@ type User struct {
 	Password string `json:"password"`
 }
 
-// init patients as a slice Patient struct
-var patients []Patient
-
 // Get all patients
 func getPatients(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// encode slice containing patients into json
-	json.NewEncoder(w).Encode(patients)
+	// Fetch environment MySQL environment variables from .env file
+	username := goDotEnvVariable("MYSQL_USERNAME")
+	password := goDotEnvVariable("MYSQL_PASSWORD")
+
+	// start MySQL connection
+	db, err := sql.Open("mysql", username+":"+password+"@tcp(127.0.0.1:3306)/patientappdb")
+	// if there is an error opening the connection, handle it
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
+	patients, err := db.Query("SELECT* FROM patientappdb.patients")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// init patients as a slice Patient struct
+	var patientsSlice []Patient
+	for patients.Next() {
+		var patient Patient
+
+		err := patients.Scan(&patient.ID, &patient.Name, &patient.DOB, &patient.Phone, &patient.Email, &patient.Time)
+		if err != nil {
+			panic(err.Error())
+		}
+		patientsSlice = append(patientsSlice, patient)
+	}
+
+	// encode slice containing Patient structs into json
+	json.NewEncoder(w).Encode(patientsSlice)
 }
 
 // Create a patient
@@ -53,7 +81,7 @@ func createPatient(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&patient) // decode json request body into Patient struct
 	patient.ID = guuid.New().String()            // creates random ID for new patient
 	patient.Time = time.Now().UTC().Format("2006-01-02 03:04:05")
-	patients = append(patients, patient)
+	// patientsSlice = append(patientsSlice, patient)
 
 	// start db connection
 	// Fetch environment MySQL environment variables from .env file
@@ -109,6 +137,7 @@ func goDotEnvVariable(key string) string {
 	return os.Getenv(key)
 }
 
+// Sets up the DB with default admin
 func setDB() {
 	// Fetch environment MySQL environment variables from .env file
 	username := goDotEnvVariable("MYSQL_USERNAME")
@@ -133,7 +162,24 @@ func setDB() {
 
 	defer insert.Close()
 
-	fmt.Print("Successfully inserted into user tables\n")
+	// users, err := db.Query("SELECT* FROM patientappdb.users")
+
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+
+	// for users.Next() {
+	// 	var user User
+
+	// 	err := users.Scan(&user.Username, &user.Password)
+	// 	if err != nil {
+	// 		panic(err.Error())
+	// 	}
+
+	// 	fmt.Print(user)
+	// }
+
+	fmt.Print("\nSuccessfully inserted into user tables\n")
 }
 
 func main() {
