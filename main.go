@@ -15,9 +15,9 @@ import (
 // Patient struct
 type Patient struct {
 	ID    string `json:"id"`
-	Name  string `json:"namne"`
+	Name  string `json:"name"`
 	DOB   string `json:"dob"`
-	Phone int    `json:"phone"`
+	Phone string `json:"phone"`
 	Email string `json:"email"`
 	Time  string `json:"time"`
 }
@@ -46,11 +46,11 @@ func createPatient(w http.ResponseWriter, r *http.Request) {
 func main() {
 	r := mux.NewRouter()
 
-	patients = append(patients, Patient{ID: "1", Name: "John Doe", DOB: "12/1/1998", Phone: 1234567890, Email: "test@123.net", Time: time.Now().String()})
-	patients = append(patients, Patient{ID: "2", Name: "David Peterson", DOB: "6/2/1980", Phone: 9876543210, Email: "dp@gmail.com", Time: time.Now().String()})
+	patients = append(patients, Patient{ID: "1", Name: "John Doe", DOB: "12/1/1998", Phone: "1234567890", Email: "test@123.net", Time: time.Now().String()})
+	patients = append(patients, Patient{ID: "2", Name: "David Peterson", DOB: "6/2/1980", Phone: "9876543210", Email: "dp@gmail.com", Time: time.Now().String()})
 
 	r.HandleFunc("/api/patients", getPatients).Methods("GET")
-	r.HandleFunc("/api/paients", createPatient).Methods("POST")
+	r.HandleFunc("/api/patients", createPatient).Methods("POST")
 
 	// set up server on port 8000
 	log.Fatal(http.ListenAndServe(":8080", r))
