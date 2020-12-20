@@ -22,6 +22,12 @@ type Patient struct {
 	Time  string `json:"time"`
 }
 
+// User struct
+type User struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 // init patients as a slice Patient struct
 var patients []Patient
 
@@ -43,6 +49,21 @@ func createPatient(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(patient)
 }
 
+// Validate admin user
+func validateAdmin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	// params := mux.Vars(r)
+	var user User
+	_ = json.NewDecoder(r.Body).Decode(&user)
+
+	if user.Username == "0" && user.Password == "Admin0" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	w.WriteHeader(http.StatusUnauthorized)
+	return
+}
+
 func main() {
 	r := mux.NewRouter()
 
@@ -51,6 +72,7 @@ func main() {
 
 	r.HandleFunc("/api/patients", getPatients).Methods("GET")
 	r.HandleFunc("/api/patients", createPatient).Methods("POST")
+	r.HandleFunc("/api/login", validateAdmin).Methods("POST")
 
 	// set up server on port 8000
 	log.Fatal(http.ListenAndServe(":8080", r))
