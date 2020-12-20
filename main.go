@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	guuid "github.com/google/uuid"
@@ -13,6 +14,7 @@ import (
 	"database/sql"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 
 // "time"
@@ -48,10 +50,34 @@ func getPatients(w http.ResponseWriter, r *http.Request) {
 func createPatient(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var patient Patient
-	_ = json.NewDecoder(r.Body).Decode(&patient) // decode json requesy body into Patient struct
+	_ = json.NewDecoder(r.Body).Decode(&patient) // decode json request body into Patient struct
 	patient.ID = guuid.New().String()            // creates random ID for new patient
+	patient.Time = time.Now().UTC().Format("2006-01-02 03:04:05")
 	patients = append(patients, patient)
+
+	// start db connection
+	// Fetch environment MySQL environment variables from .env file
+	username := goDotEnvVariable("MYSQL_USERNAME")
+	password := goDotEnvVariable("MYSQL_PASSWORD")
+	db, err := sql.Open("mysql", username+":"+password+"@tcp(127.0.0.1:3306)/patientappdb")
+	// if there is an error opening the connection, handle it
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+
+	// insert new patient into DB
+	query := fmt.Sprintf("INSERT INTO patients VALUES ('%s','%s','%s','%s','%s','%s')", patient.ID, patient.Name, patient.DOB, patient.Phone, patient.Email, patient.Time)
+	insert, err := db.Query(query)
+
+	if err != nil {
+		panic(err.Error())
+	}
+	defer insert.Close()
+
+	// encode inserted patient as json and send back
 	json.NewEncoder(w).Encode(patient)
+
 }
 
 // Validate admin user
@@ -61,7 +87,7 @@ func validateAdmin(w http.ResponseWriter, r *http.Request) {
 	var user User
 	_ = json.NewDecoder(r.Body).Decode(&user)
 
-	if user.Username == "0" && user.Password == "Admin0" {
+	if user.Username == "0" && user.Password == "0Admin" {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
@@ -69,18 +95,27 @@ func validateAdmin(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func main() {
-	r := mux.NewRouter()
+// use godot package to load/read the .env file and
+// return the value of the key
+func goDotEnvVariable(key string) string {
 
-	patients = append(patients, Patient{ID: "1", Name: "John Doe", DOB: "12/1/1998", Phone: "1234567890", Email: "test@123.net", Time: time.Now().String()})
-	patients = append(patients, Patient{ID: "2", Name: "David Peterson", DOB: "6/2/1980", Phone: "9876543210", Email: "dp@gmail.com", Time: time.Now().String()})
+	// load .env file
+	err := godotenv.Load(".env")
 
-	r.HandleFunc("/api/patients", getPatients).Methods("GET")
-	r.HandleFunc("/api/patients", createPatient).Methods("POST")
-	r.HandleFunc("/api/login", validateAdmin).Methods("POST")
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	return os.Getenv(key)
+}
+
+func setDB() {
+	// Fetch environment MySQL environment variables from .env file
+	username := goDotEnvVariable("MYSQL_USERNAME")
+	password := goDotEnvVariable("MYSQL_PASSWORD")
 
 	// start MySQL connection
-	db, err := sql.Open("mysql", "root:Clutch4405!@tcp(127.0.0.1:3306)/patientappdb")
+	db, err := sql.Open("mysql", username+":"+password+"@tcp(127.0.0.1:3306)/patientappdb")
 	// if there is an error opening the connection, handle it
 	if err != nil {
 		panic(err.Error())
@@ -98,10 +133,19 @@ func main() {
 
 	defer insert.Close()
 
-	fmt.Print("Successfully inserted into user tables")
+	fmt.Print("Successfully inserted into user tables\n")
+}
+
+func main() {
+	r := mux.NewRouter()
+
+	r.HandleFunc("/api/patients", getPatients).Methods("GET")
+	r.HandleFunc("/api/patients", createPatient).Methods("POST")
+	r.HandleFunc("/api/login", validateAdmin).Methods("POST")
+
+	// sets the db up with default admin
+	setDB()
 
 	// set up server on port 8000
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
-
-// mysql 0Admin
