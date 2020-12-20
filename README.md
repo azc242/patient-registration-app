@@ -1,10 +1,10 @@
-## Patient Registration App in GoLang and React.js
+# Patient Registration App in GoLang and React.js
 
-### Inspiration
+## Inspiration
 
 This app was created for the [Done.](https://donefirst.com) software engineering internship process. I could've chosen any tech stack, but since their tech stack is in Go and React, I chose it for this project. I also wanted to use Go because I had never used it before prior to this.
 
-### Backend/API
+## Backend/API
 
 The API has 2 routes and 3 ways to utilize them
 
@@ -17,15 +17,25 @@ The API has 2 routes and 3 ways to utilize them
    - POST: validates the user trying to log in (only the admin can log in)
      - Requires a Username and Password
 
-### Requirements
+## Requirements
 
 - GoLang (I used `go1.15.6` for this project)
 - MySQL
-- React.js
+- npm and React.js
 
-### Environment Variables
+## Environment Variables
 
 There are only two environment variables required to run the backend, which are located in a `.env` file not available in this repository
 
 1. MYSQL_USERNAME (the username for MySQL)
 2. MSQL_PASSWORD (the password for MySQL)
+
+## Running The App
+
+### Set up the server
+
+To run the server locally, run `go build && ./Done`. This will build the application and execute it. The server will run on http://localhost:8080/
+
+#### Running the client side
+
+To run the React.js frontend, first navigate into the client directory by running `cd client` in the root directory. Then, run `npm start`. You will be able to access it by going to http://localhost:3000/
