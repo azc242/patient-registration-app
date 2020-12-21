@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
-import PatientInfo from "./PatientInfo";
 
 function PatientDisplay() {
     const [patients, setPatients] = useState([]);
@@ -27,9 +26,6 @@ function PatientDisplay() {
                     <th>Time Registered</th>
                     </tr>
                 </thead>
-                {/* {patients.map((result, index) => {
-                    <div>hi</div>
-                })} */}
                 <tbody>
                 {patients.map((patient, index) => {
                     return (
@@ -45,7 +41,6 @@ function PatientDisplay() {
                 })
                 }
                 </tbody>
-                
             </table>
         </div>
     )
