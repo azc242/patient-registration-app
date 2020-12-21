@@ -121,11 +121,41 @@ func validateAdmin(w http.ResponseWriter, r *http.Request) {
 	var user User
 	_ = json.NewDecoder(r.Body).Decode(&user)
 
-	if user.Username == "0" && user.Password == "0Admin" {
-		w.WriteHeader(http.StatusOK)
+	// Fetch environment MySQL environment variables from .env file
+	username := goDotEnvVariable("MYSQL_USERNAME")
+	password := goDotEnvVariable("MYSQL_PASSWORD")
+
+	// start MySQL connection
+	db, err := sql.Open("mysql", username+":"+password+"@tcp(127.0.0.1:3306)/patientappdb")
+	// if there is an error opening the connection, handle it
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+	query := fmt.Sprintf("SELECT * FROM patientappdb.users WHERE username='%s' AND password='%s'", user.Username, user.Password)
+	admins, err := db.Query(query)
+
+	if err != nil {
+		panic(err.Error())
+	}
+	// for loop only runs when admin was found
+	for admins.Next() {
+		// Only the last 2 lines of code in this block are necessary, this is just for seeing who logged in
+		// and in case different admins in the future may want different privelages, so it is necessary to know
+		// which use logged into the system.
+		var admin User
+		err := admins.Scan(&admin.Username, &admin.Password)
+		if err != nil {
+			panic(err.Error())
+		}
+		fmt.Print(admin.Username) // Unnecessary, but tells us (developers) who logged in
+
+		w.WriteHeader(http.StatusOK) // send 200 HTTP status
 		return
 	}
-	w.WriteHeader(http.StatusUnauthorized)
+	// If the code gets to here without returning the login information was invalid
+	w.WriteHeader(http.StatusUnauthorized) // send 401 HTTP status
 	return
 }
 
@@ -140,45 +170,6 @@ func goDotEnvVariable(key string) string {
 	return os.Getenv(key)
 }
 
-// Test POST requests
-func testPOST(w http.ResponseWriter, r *http.Request) {
-	// enable CORS
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("Content-Type", "application/json")
-
-	var patient Patient
-	_ = json.NewDecoder(r.Body).Decode(&patient) // decode json request body into Patient struct
-	patient.ID = guuid.New().String()            // creates random ID for new patient
-	patient.Time = time.Now().UTC().Format("2006-01-02 03:04:05")
-
-	// start db connection
-	// Fetch environment MySQL environment variables from .env file
-	username := goDotEnvVariable("MYSQL_USERNAME")
-	password := goDotEnvVariable("MYSQL_PASSWORD")
-	db, err := sql.Open("mysql", username+":"+password+"@tcp(127.0.0.1:3306)/patientappdb")
-	// if there is an error opening the connection, handle it
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
-
-	// insert new patient into DB
-	query := fmt.Sprintf("INSERT INTO patients VALUES ('%s','%s','%s','%s','%s','%s','%s')", patient.ID, patient.Name, patient.DOB, patient.Phone, patient.Email, patient.Address, patient.Time)
-	insert, err := db.Query(query)
-
-	if err != nil {
-		panic(err.Error())
-	}
-	defer insert.Close()
-
-	w.WriteHeader(http.StatusOK)
-
-	// encode inserted patient as json and send back
-	json.NewEncoder(w).Encode(patient)
-
-}
-
 func main() {
 
 	r := mux.NewRouter()
@@ -190,8 +181,8 @@ func main() {
 	// r.HandleFunc("/test", testPOST).Methods("POST")
 	// r.HandleFunc("/test", testPOST).Methods("OPTIONS")
 
-	// sets the db up with default admin
-	// setDB()
+	// sets the db up with default admin and 2 test users
+	setDB()
 
 	// set up server on port 8000
 	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"http://localhost:3000"}))(r)))
@@ -237,7 +228,7 @@ func setDB() {
 
 	// Artificially set up the user admin
 	// This user is the only use who can log in and see patients information
-	// insert, err = db.Query("INSERT INTO users VALUES ('0', '0Admin')")
+	insert, err = db.Query("INSERT INTO users VALUES ('0', '0Admin')")
 
 	if err != nil {
 		panic(err.Error())
@@ -245,4 +236,43 @@ func setDB() {
 	defer insert.Close()
 
 	fmt.Print("Successfully inserted into user tables\n")
+}
+
+// For troubleshooting and testing POST request issues relating to CORS or data types sent from the client
+func testPOST(w http.ResponseWriter, r *http.Request) {
+	// enable CORS
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Content-Type", "application/json")
+
+	var patient Patient
+	_ = json.NewDecoder(r.Body).Decode(&patient) // decode json request body into Patient struct
+	patient.ID = guuid.New().String()            // creates random ID for new patient
+	patient.Time = time.Now().UTC().Format("2006-01-02 03:04:05")
+
+	// start db connection
+	// Fetch environment MySQL environment variables from .env file
+	username := goDotEnvVariable("MYSQL_USERNAME")
+	password := goDotEnvVariable("MYSQL_PASSWORD")
+	db, err := sql.Open("mysql", username+":"+password+"@tcp(127.0.0.1:3306)/patientappdb")
+	// if there is an error opening the connection, handle it
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+
+	// insert new patient into DB
+	query := fmt.Sprintf("INSERT INTO patients VALUES ('%s','%s','%s','%s','%s','%s','%s')", patient.ID, patient.Name, patient.DOB, patient.Phone, patient.Email, patient.Address, patient.Time)
+	insert, err := db.Query(query)
+
+	if err != nil {
+		panic(err.Error())
+	}
+	defer insert.Close()
+
+	w.WriteHeader(http.StatusOK)
+
+	// encode inserted patient as json and send back
+	json.NewEncoder(w).Encode(patient)
+
 }
