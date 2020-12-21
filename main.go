@@ -54,7 +54,7 @@ func getPatients(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	patients, err := db.Query("SELECT* FROM patientappdb.patients")
+	patients, err := db.Query("SELECT* FROM patientappdb.patients ORDER BY TIME")
 
 	if err != nil {
 		panic(err.Error())
