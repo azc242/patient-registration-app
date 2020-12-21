@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import "./App.css";
 
-function Login() {
+function Login(props) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -24,6 +24,7 @@ function Login() {
                     return;
                 }
             });
+            props.displayPatients();
         event.preventDefault();
     }
     function handleUsernameChange(event) {
@@ -36,6 +37,8 @@ function Login() {
     }
     return (
         <div>
+            <h1>Admin Sign In</h1>
+            <h5>If you are not an admin, please head to the home page and register.</h5>
             <form>
                 <fieldset>
                     <label>Admin ID</label>
