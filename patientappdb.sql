@@ -12,6 +12,7 @@ CREATE TABLE patients(
     dob varchar(355),
     phone varchar(255),
     email varchar(255),
+    address varchar(255),
     time timestamp,
     PRIMARY KEY(id)
 );

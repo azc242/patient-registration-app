@@ -28,7 +28,7 @@ The API has 2 routes and 3 ways to utilize them
 There are only two environment variables required to run the backend, which are located in a `.env` file not available in this repository
 
 1. MYSQL_USERNAME (the username for MySQL)
-2. MSQL_PASSWORD (the password for MySQL)
+2. MYSQL_PASSWORD (the password for MySQL)
 
 ## Running The App
 
