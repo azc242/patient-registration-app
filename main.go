@@ -192,15 +192,25 @@ func setDB() {
 func testPOST(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Content-Type", "application/json")
 
 	fmt.Print("This line hit")
 
-	// Trying new decoder
-	decoder := json.NewDecoder(r.Body)
+	// var patient Patient
+	// fmt.Print(r.Body)
+	// if r.Body == nil {
+	// 	http.Error(w, "Please send a request body", 400)
+	// 	return
+	// }
+	// err := json.NewDecoder(r.Body).Decode(&patient) // decode json request body into Patient struct
+	// if err != nil {
+	// 	http.Error(w, err.Error(), 400)
+	// 	return
+	// }
 
 	var patient Patient
-	_ = decoder.Decode(&patient)      // decode json request body into Patient struct
-	patient.ID = guuid.New().String() // creates random ID for new patient
+	_ = json.NewDecoder(r.Body).Decode(&patient) // decode json request body into Patient struct
+	patient.ID = guuid.New().String()            // creates random ID for new patient
 	patient.Time = time.Now().UTC().Format("2006-01-02 03:04:05")
 
 	// start db connection
@@ -237,7 +247,8 @@ func main() {
 	r.HandleFunc("/api/patients", getPatients).Methods("GET")
 	r.HandleFunc("/api/patients", createPatient).Methods("POST")
 	r.HandleFunc("/api/login", validateAdmin).Methods("POST")
-	r.HandleFunc("/test", testPOST).Methods("POST", "OPTIONS")
+	r.HandleFunc("/test", testPOST).Methods("POST")
+	r.HandleFunc("/test", testPOST).Methods("OPTIONS")
 
 	// sets the db up with default admin
 	// setDB()

@@ -41,8 +41,16 @@ function Signup() {
             address: address
         };
 
+        console.log(patient);
+
         // send post request to API
-        axios.post('http://localhost:8080/test', { patient }, {headers: {'Access-Control-Allow-Origin': '*'}}, { crossdomain: true })
+        axios.post('http://localhost:8080/test', {
+            name: name,
+            dob: dob,
+            phone: phone,
+            email: email,
+            address: address
+        }, {headers:{}}, { crossdomain: true })
             .then (res => {
                 console.log(res);
                 console.log(res.data);
