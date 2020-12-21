@@ -78,7 +78,11 @@ func getPatients(w http.ResponseWriter, r *http.Request) {
 
 // Create a patient
 func createPatient(w http.ResponseWriter, r *http.Request) {
+	// enable CORS
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Content-Type", "application/json")
+
 	var patient Patient
 	_ = json.NewDecoder(r.Body).Decode(&patient) // decode json request body into Patient struct
 	patient.ID = guuid.New().String()            // creates random ID for new patient
@@ -104,6 +108,7 @@ func createPatient(w http.ResponseWriter, r *http.Request) {
 	}
 	defer insert.Close()
 
+	w.WriteHeader(http.StatusOK) // Sets 200 status
 	// encode inserted patient as json and send back
 	json.NewEncoder(w).Encode(patient)
 
@@ -127,15 +132,69 @@ func validateAdmin(w http.ResponseWriter, r *http.Request) {
 // use godot package to load/read the .env file and
 // return the value of the key
 func goDotEnvVariable(key string) string {
-
 	// load .env file
 	err := godotenv.Load(".env")
-
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
-
 	return os.Getenv(key)
+}
+
+// Test POST requests
+func testPOST(w http.ResponseWriter, r *http.Request) {
+	// enable CORS
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Content-Type", "application/json")
+
+	var patient Patient
+	_ = json.NewDecoder(r.Body).Decode(&patient) // decode json request body into Patient struct
+	patient.ID = guuid.New().String()            // creates random ID for new patient
+	patient.Time = time.Now().UTC().Format("2006-01-02 03:04:05")
+
+	// start db connection
+	// Fetch environment MySQL environment variables from .env file
+	username := goDotEnvVariable("MYSQL_USERNAME")
+	password := goDotEnvVariable("MYSQL_PASSWORD")
+	db, err := sql.Open("mysql", username+":"+password+"@tcp(127.0.0.1:3306)/patientappdb")
+	// if there is an error opening the connection, handle it
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+
+	// insert new patient into DB
+	query := fmt.Sprintf("INSERT INTO patients VALUES ('%s','%s','%s','%s','%s','%s','%s')", patient.ID, patient.Name, patient.DOB, patient.Phone, patient.Email, patient.Address, patient.Time)
+	insert, err := db.Query(query)
+
+	if err != nil {
+		panic(err.Error())
+	}
+	defer insert.Close()
+
+	w.WriteHeader(http.StatusOK)
+
+	// encode inserted patient as json and send back
+	json.NewEncoder(w).Encode(patient)
+
+}
+
+func main() {
+
+	r := mux.NewRouter()
+
+	r.HandleFunc("/api/patients", getPatients).Methods("GET")
+	r.HandleFunc("/api/patients", createPatient).Methods("POST")
+	r.HandleFunc("/api/patients", createPatient).Methods("OPTIONS") // Helps with CORS
+	r.HandleFunc("/api/login", validateAdmin).Methods("POST")
+	// r.HandleFunc("/test", testPOST).Methods("POST")
+	// r.HandleFunc("/test", testPOST).Methods("OPTIONS")
+
+	// sets the db up with default admin
+	// setDB()
+
+	// set up server on port 8000
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"http://localhost:3000"}))(r)))
 }
 
 // Sets up the DB with default admin
@@ -186,73 +245,4 @@ func setDB() {
 	defer insert.Close()
 
 	fmt.Print("Successfully inserted into user tables\n")
-}
-
-// Test POST requests
-func testPOST(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("Content-Type", "application/json")
-
-	fmt.Print("This line hit")
-
-	// var patient Patient
-	// fmt.Print(r.Body)
-	// if r.Body == nil {
-	// 	http.Error(w, "Please send a request body", 400)
-	// 	return
-	// }
-	// err := json.NewDecoder(r.Body).Decode(&patient) // decode json request body into Patient struct
-	// if err != nil {
-	// 	http.Error(w, err.Error(), 400)
-	// 	return
-	// }
-
-	var patient Patient
-	_ = json.NewDecoder(r.Body).Decode(&patient) // decode json request body into Patient struct
-	patient.ID = guuid.New().String()            // creates random ID for new patient
-	patient.Time = time.Now().UTC().Format("2006-01-02 03:04:05")
-
-	// start db connection
-	// Fetch environment MySQL environment variables from .env file
-	username := goDotEnvVariable("MYSQL_USERNAME")
-	password := goDotEnvVariable("MYSQL_PASSWORD")
-	db, err := sql.Open("mysql", username+":"+password+"@tcp(127.0.0.1:3306)/patientappdb")
-	// if there is an error opening the connection, handle it
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
-
-	// insert new patient into DB
-	query := fmt.Sprintf("INSERT INTO patients VALUES ('%s','%s','%s','%s','%s','%s','%s')", patient.ID, patient.Name, patient.DOB, patient.Phone, patient.Email, patient.Address, patient.Time)
-	insert, err := db.Query(query)
-
-	if err != nil {
-		panic(err.Error())
-	}
-	defer insert.Close()
-
-	w.WriteHeader(http.StatusOK)
-
-	// encode inserted patient as json and send back
-	json.NewEncoder(w).Encode(patient)
-
-}
-
-func main() {
-
-	r := mux.NewRouter()
-
-	r.HandleFunc("/api/patients", getPatients).Methods("GET")
-	r.HandleFunc("/api/patients", createPatient).Methods("POST")
-	r.HandleFunc("/api/login", validateAdmin).Methods("POST")
-	r.HandleFunc("/test", testPOST).Methods("POST")
-	r.HandleFunc("/test", testPOST).Methods("OPTIONS")
-
-	// sets the db up with default admin
-	// setDB()
-
-	// set up server on port 8000
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"http://localhost:3000"}))(r)))
 }

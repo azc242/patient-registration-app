@@ -1,9 +1,9 @@
-h1 {
+body {
   margin-top: 3rem;
 }
-
 .App {
   text-align: center;
+  /* margin-top: 3rem; */
 }
 
 .App-logo {
@@ -11,10 +11,10 @@ h1 {
   pointer-events: none;
 }
 
-/* Custom button color */
-.button {
+#black-button {
   background-color: transparent;
   color: black;
+  border-color: black;
 }
 
 @media (prefers-reduced-motion: no-preference) {

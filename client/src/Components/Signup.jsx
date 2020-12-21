@@ -31,20 +31,10 @@ function Signup() {
         console.log(address);
     }
     function submitData(event) {
-        console.log("SUBMITTED FORM DATA");
         event.preventDefault(); // prevent from page refreshing
-        const patient = {
-            name: name,
-            dob: dob,
-            phone: phone,
-            email: email,
-            address: address
-        };
-
-        console.log(patient);
 
         // send post request to API
-        axios.post('http://localhost:8080/test', {
+        axios.post('http://localhost:8080/api/patients', {
             name: name,
             dob: dob,
             phone: phone,
