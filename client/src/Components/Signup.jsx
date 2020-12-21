@@ -31,7 +31,9 @@ function Signup() {
         console.log(address);
     }
     function submitData(event) {
-        event.preventDefault(); // prevent from page refreshing
+        if(name === "" || dob === "" || phone === "" || email === "" || address === "") {
+            return;
+        }
 
         // send post request to API
         axios.post('http://localhost:8080/api/patients', {
@@ -45,7 +47,7 @@ function Signup() {
                 console.log(res);
                 console.log(res.data);
             })
-        event.preventDefault(); // prevent from page refreshing
+        alert("You are registered!");
     }
 
     return(
@@ -67,7 +69,9 @@ function Signup() {
                     <label htmlFor="address">Address</label>
                     <textarea rows="2" placeholder="Street Address" onChange={handleAddressChange} value={address} required></textarea>
 
-                    <input className="button button-outline" type="submit" value="Sign Up" onClick={submitData}></input>
+                    <a href="/">
+                        <input className="button button-outline" type="submit" value="Sign Up" onClick={submitData}></input>
+                    </a>
                 </fieldset>
             </form>
         </div>
