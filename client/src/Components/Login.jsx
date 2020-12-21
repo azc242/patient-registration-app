@@ -14,6 +14,7 @@ function Login(props) {
             .then (res => {
                 console.log(res);
                 console.log(res.data);
+                props.displayPatients();
             })
             .catch(function (error) {
                 if (error.response) {
@@ -21,10 +22,8 @@ function Login(props) {
                     console.log(error.response.status);
                     console.log(error.response.headers);
                     alert("Invalid credentials. Try again.");
-                    return;
                 }
             });
-            props.displayPatients();
         event.preventDefault();
     }
     function handleUsernameChange(event) {
