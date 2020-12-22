@@ -1,70 +1,64 @@
-# Getting Started with Create React App
+# Patient Registration App in GoLang and React.js
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## The App
 
-## Available Scripts
+This app was created for the [Done.](https://donefirst.com) software engineering internship process. I could've chosen any tech stack, but since their tech stack is in Go and React, I chose it for this project.
 
-In the project directory, you can run:
+This app allows patients to submit their name, date of birth, phone number, email and address. Their registration time is automatically recorded.
 
-### `npm start`
+The admin can log in using their credentials and view all the patients in the queue, ordered by the time they registered. By default, the admin has a username of `0`, and password of `0Admin`. However the MySQL database has a table for admins, so new admins can be registered.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Demo: https://youtu.be/pS9wZu33LmY
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Patient registration:
+![Registration view](https://i.imgur.com/J6tLW29.png)Admin view:
+![Admin view](https://i.imgur.com/hW07mqg.png)
 
-### `npm test`
+## Backend/API
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The API has 2 routes and 3 ways to utilize them
 
-### `npm run build`
+1. `/api/patients`
+   - GET: fetches all the patients in the databasem returned as JSON
+   - POST: creates a patient
+     - Requires a name, date of birth, phone number, and email (name, dob, phone, email)
+     - Example (raw body data):`{"name": "Randy Carlson","dob": "2/8/1992","phone": "123-456-7890","email":"rc23@test.net", "address": "123 Software Drive, San Francisco, CA"}`
+2. `/api/login`
+   - POST: validates the user trying to log in (only the admin can log in)
+     - Requires a Username and Password
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Requirements
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- GoLang (I used `go1.15.6` for this project)
+- MySQL
+- npm and React.js
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Environment Variables
 
-### `npm run eject`
+There are only two environment variables required to run the backend, which are located in a `.env` file not available in this repository
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+1. MYSQL_USERNAME (the username for MySQL)
+2. MSQL_PASSWORD (the password for MySQL)
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Running The App
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+#### Set up the server
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+To run the server locally, run `go build && ./Done`. This will build the application and execute it. The server will run on http://localhost:8080/
 
-## Learn More
+#### Running the client side
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+To run the React.js frontend, first navigate into the client directory by running `cd client` in the root directory. Then, run `npm start`. You will be able to access it by going to http://localhost:3000/
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+#### Setting up MySQL
 
-### Code Splitting
+First, make sure MySQL is installed on your machine. If it is, make a connection served at `127.0.0.1:3306`. I called my connection patient-registration-app, but any name should work. Then, run the SQL file `pathentappdb.sql` to create the tables for admins and patients. The `main.go` file will make a connection to this database at the given port `3306`. If you run into troubles, make sure the MySQL server is running.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## What I Used
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- [guuid](github.com/google/uuid) for generating unique patient IDs
+- [handlers](github.com/gorilla/handlers) and [mux](github.com/gorilla/mux) for dealing with http requests and CORS
+- [go-sql-driver](github.com/go-sql-driver/mysql) for MySQL queries
+- [godotenv](github.com/joho/godotenv) for environment variables
+- [Axios](https://www.npmjs.com/package/axios) for making GET/POST requests on the client side
+- [Milligram](https://milligram.io/) for the clean, minimalistic CSS

@@ -16,10 +16,3 @@ CREATE TABLE patients(
     time timestamp,
     PRIMARY KEY(id)
 );
-
-select * from patientappdb.users;
-
-select * from patientappdb.patients;
-SELECT * FROM PATIENTS ORDER BY TIME;
-
-delete from patients where id='e72577fd-afa9-411f-87c9-464dbe6210fe'

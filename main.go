@@ -184,8 +184,12 @@ func main() {
 	// sets the db up with default admin and 2 test users
 	setDB()
 
+	handler := handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
+		handlers.AllowedOrigins([]string{"http://localhost:3000"}))(r)
+
 	// set up server on port 8000
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"http://localhost:3000"}))(r)))
+	log.Fatal(http.ListenAndServe(":8080", handler))
 }
 
 // Sets up the DB with default admin
