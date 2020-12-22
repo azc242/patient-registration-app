@@ -12,27 +12,22 @@ function Signup() {
 
     function handleNameChange(event) {
         setName(event.target.value)
-        console.log(name);
     }
     function handleDobChange(event) {
         setDob(event.target.value)
-        console.log(dob);
     }
     function handlePhoneChange(event) {
         setPhone(event.target.value)
-        console.log(phone);
     }
     function handleEmailChange(event) {
         setEmail(event.target.value)
-        console.log(email);
     }
     function handleAddressChange(event) {
         setAddress(event.target.value)
-        console.log(address);
     }
     function submitData(event) {
         if(name === "" || dob === "" || phone === "" || email === "" || address === "") {
-            return;
+            return; 
         }
 
         // send post request to API

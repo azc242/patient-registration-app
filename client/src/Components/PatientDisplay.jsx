@@ -8,7 +8,6 @@ function PatientDisplay() {
     useEffect(() => {
         axios.get('http://localhost:8080/api/patients', { crossdomain: true }).then(response => {
             setPatients(response.data);
-            console.log(patients);
         });
     }, []);
     

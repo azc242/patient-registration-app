@@ -13,7 +13,6 @@ function Login(props) {
         }, {headers:{}}, { crossdomain: true })
             .then (res => {
                 console.log(res);
-                console.log(res.data);
                 props.displayPatients();
             })
             .catch(function (error) {
@@ -28,11 +27,9 @@ function Login(props) {
     }
     function handleUsernameChange(event) {
         setUsername(event.target.value);
-        console.log(event.target.value);
     }
     function handlePasswordChange(event) {
         setPassword(event.target.value);
-        console.log(event.target.value);
     }
     return (
         <div>
