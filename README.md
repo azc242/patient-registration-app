@@ -4,11 +4,14 @@
 
 This app was created for the [Done.](https://donefirst.com) software engineering internship process. I could've chosen any tech stack, but since their tech stack is in Go and React, I chose it for this project.
 
-This app applows patients to submit their name, date of birth, phone number, email and address. Their registration time is automatically recorded.
+This app allows patients to submit their name, date of birth, phone number, email and address. Their registration time is automatically recorded.
 
 The admin can log in using their credentials and view all the patients in the queue, ordered by the time they registered. By default, the admin has a username of `0`, and password of `0Admin`. However the MySQL database has a table for admins, so new admins can be registered.
 
-![Registration view](https://i.imgur.com/J6tLW29.png)
+Demo: https://youtu.be/pS9wZu33LmY
+
+Patient registration:
+![Registration view](https://i.imgur.com/J6tLW29.png)Admin view:
 ![Admin view](https://i.imgur.com/hW07mqg.png)
 
 ## Backend/API
