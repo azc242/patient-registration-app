@@ -22,7 +22,7 @@ The API has 2 routes and 3 ways to utilize them
    - GET: fetches all the patients in the databasem returned as JSON
    - POST: creates a patient
      - Requires a name, date of birth, phone number, and email (name, dob, phone, email)
-     - Example (raw body data):`{"name": "Randy Carlson","dob": "2/8/1992","phone": "123-456-7890","email","rc23@test.net"}`
+     - Example (raw body data):`{"name": "Randy Carlson","dob": "2/8/1992","phone": "123-456-7890","email":"rc23@test.net", "address": "123 Software Drive, San Francisco, CA"}`
 2. `/api/login`
    - POST: validates the user trying to log in (only the admin can log in)
      - Requires a Username and Password
@@ -42,13 +42,17 @@ There are only two environment variables required to run the backend, which are 
 
 ## Running The App
 
-### Set up the server
+#### Set up the server
 
 To run the server locally, run `go build && ./Done`. This will build the application and execute it. The server will run on http://localhost:8080/
 
 #### Running the client side
 
 To run the React.js frontend, first navigate into the client directory by running `cd client` in the root directory. Then, run `npm start`. You will be able to access it by going to http://localhost:3000/
+
+#### Setting up MySQL
+
+First, make sure MySQL is installed on your machine. If it is, make a connection served at `127.0.0.1:3306`. I called my connection patient-registration-app, but any name should work. Then, run the SQL file `pathentappdb.sql` to create the tables for admins and patients. The `main.go` file will make a connection to this database at the given port `3306`. If you run into troubles, make sure the MySQL server is running.
 
 ## What I Used
 
